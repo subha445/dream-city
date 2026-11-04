@@ -6,65 +6,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DREAM CITY | 3D City Builder</title>
   <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-  <header class="topbar">
-    <h1>🏙️ DREAM CITY</h1>
-    <span>YOUR WORLD. YOUR RULES.</span>
-  </header>
-
-  <main class="game-layout">
-    <aside class="sidebar">
-      <h2>Build Your City</h2>
-
-      <p class="category">BUILDINGS</p>
-      <button class="tool active" data-tool="house">🏠 House</button>
-      <button class="tool" data-tool="office">🏢 Office</button>
-      <button class="tool" data-tool="skyscraper">🏙️ Skyscraper</button>
-
-      <p class="category">ENVIRONMENT</p>
-      <button class="tool" data-tool="road">🛣️ Road</button>
-      <button class="tool" data-tool="tree">🌳 Tree</button>
-      <button class="tool" data-tool="park">🌲 Park</button>
-
-      <p class="category">CITY SETTINGS</p>
-      <button id="dayNight">🌙 Day / Night</button>
-      <button id="weather">☀️ Weather</button>
-
-      <p class="category">CITY MANAGEMENT</p>
-      <button id="deleteSelected">🗑️ Delete Selected</button>
-      <button id="saveCity">💾 Save City</button>
-      <button id="loadCity">📂 Load City</button>
-      <button id="resetCity">🔄 Reset City</button>
-    </aside>
-
-    <section class="city-area">
-      <div class="city-heading">
-        <div>
-          <h2>My City</h2>
-          <p>Click the ground to place your selected item.</p>
-        </div>
-        <span id="status">● Ready to build</span>
-      </div>
-
-      <div id="cityCanvas"></div>
-
-      <div class="stats">
-        <div>🏢 Buildings: <strong id="buildingCount">0</strong></div>
-        <div>🌳 Nature: <strong id="natureCount">0</strong></div>
-        <div>👥 Population: <strong id="population">0</strong></div>
-      </div>
-    </section>
-  </main>
-
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
       }
     }
   </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🏙️ DREAM CITY</div>
+    <div class="top-actions">
+      <span id="cityStatus">CITY ONLINE</span>
+      <button id="dayBtn">☀️ Day</button>
+      <button id="nightBtn">🌙 Night</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <h2>Build your city</h2>
+      <p class="hint">Choose an object, then tap the ground.</p>
+
+      <div class="tools">
+        <button class="tool active" data-tool="select">🖱️ Select</button>
+        <button class="tool" data-tool="house">🏠 House</button>
+        <button class="tool" data-tool="office">🏢 Office</button>
+        <button class="tool" data-tool="tower">🏙️ Skyscraper</button>
+        <button class="tool" data-tool="road">🛣️ Road</button>
+        <button class="tool" data-tool="tree">🌳 Tree</button>
+        <button class="tool" data-tool="park">🌲 Park</button>
+        <button class="tool" data-tool="lamp">💡 Street Lamp</button>
+      </div>
+
+      <hr>
+      <h3>City controls</h3>
+      <button id="rotateBtn" class="wide">🔄 Rotate selected</button>
+      <button id="deleteBtn" class="wide danger">🗑️ Delete selected</button>
+      <button id="rainBtn" class="wide">🌧️ Toggle rain</button>
+      <button id="saveBtn" class="wide">💾 Save city</button>
+      <button id="loadBtn" class="wide">📂 Load city</button>
+      <button id="resetBtn" class="wide danger">↻ Reset city</button>
+
+      <div class="stats">
+        <h3>City statistics</h3>
+        <p>Buildings <strong id="buildingCount">0</strong></p>
+        <p>Trees <strong id="treeCount">0</strong></p>
+        <p>Roads <strong id="roadCount">0</strong></p>
+        <p>Total objects <strong id="totalCount">0</strong></p>
+      </div>
+    </aside>
+
+    <section class="city-area">
+      <div class="canvas-label">
+        <span>🌎 YOUR VIRTUAL WORLD</span>
+        <span>Drag to rotate · Scroll to zoom</span>
+      </div>
+      <div id="cityCanvas"></div>
+      <div id="message">Welcome to DREAM CITY!</div>
+    </section>
+  </main>
+
   <script type="module" src="script.js"></script>
 </body>
 </html>
