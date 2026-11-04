@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DREAM CITY | 3D City Builder</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>🏙️ DREAM CITY</h1>
+    <span>YOUR WORLD. YOUR RULES.</span>
+  </header>
+
+  <main class="game-layout">
+    <aside class="sidebar">
+      <h2>Build Your City</h2>
+
+      <p class="category">BUILDINGS</p>
+      <button class="tool active" data-tool="house">🏠 House</button>
+      <button class="tool" data-tool="office">🏢 Office</button>
+      <button class="tool" data-tool="skyscraper">🏙️ Skyscraper</button>
+
+      <p class="category">ENVIRONMENT</p>
+      <button class="tool" data-tool="road">🛣️ Road</button>
+      <button class="tool" data-tool="tree">🌳 Tree</button>
+      <button class="tool" data-tool="park">🌲 Park</button>
+
+      <p class="category">CITY SETTINGS</p>
+      <button id="dayNight">🌙 Day / Night</button>
+      <button id="weather">☀️ Weather</button>
+
+      <p class="category">CITY MANAGEMENT</p>
+      <button id="deleteSelected">🗑️ Delete Selected</button>
+      <button id="saveCity">💾 Save City</button>
+      <button id="loadCity">📂 Load City</button>
+      <button id="resetCity">🔄 Reset City</button>
+    </aside>
+
+    <section class="city-area">
+      <div class="city-heading">
+        <div>
+          <h2>My City</h2>
+          <p>Click the ground to place your selected item.</p>
+        </div>
+        <span id="status">● Ready to build</span>
+      </div>
+
+      <div id="cityCanvas"></div>
+
+      <div class="stats">
+        <div>🏢 Buildings: <strong id="buildingCount">0</strong></div>
+        <div>🌳 Nature: <strong id="natureCount">0</strong></div>
+        <div>👥 Population: <strong id="population">0</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+      }
+    }
+  </script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
