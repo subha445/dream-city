@@ -1,165 +1,166 @@
 
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
-  background: #07111f;
-  color: #eef5ff;
   font-family: Arial, sans-serif;
-  overflow: hidden;
+  background: #07111f;
+  color: #fff;
+  min-height: 100vh;
 }
 
 button {
   cursor: pointer;
-  border: 1px solid #263b55;
-  background: #14243a;
+  border: 1px solid #33465e;
+  background: #14263b;
   color: white;
-  padding: 12px;
-  border-radius: 10px;
-  font-weight: 600;
-  transition: .2s;
+  padding: 11px;
+  border-radius: 9px;
+  font-size: 13px;
+  transition: 0.2s;
 }
 
 button:hover {
-  background: #24517a;
-  transform: translateY(-2px);
+  background: #246b91;
+  transform: translateY(-1px);
 }
 
 .topbar {
-  height: 65px;
-  background: #0c1929;
-  border-bottom: 1px solid #263b55;
+  min-height: 65px;
+  padding: 12px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  gap: 12px;
+  background: #0c1b2c;
+  border-bottom: 1px solid #263b53;
 }
 
 .brand {
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: 2px;
-  color: #68d7ff;
+  font-size: 21px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.brand span {
+  color: #38c8ed;
+  font-size: 13px;
 }
 
 .top-actions {
   display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-#cityStatus {
-  color: #60e6a3;
-  font-size: 11px;
-  font-weight: bold;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .layout {
   display: flex;
-  height: calc(100vh - 65px);
+  min-height: calc(100vh - 65px);
 }
 
 .sidebar {
   width: 245px;
   flex-shrink: 0;
-  background: #0c1929;
-  padding: 18px;
+  padding: 20px 15px;
+  background: #0c1b2c;
+  border-right: 1px solid #263b53;
   overflow-y: auto;
-  border-right: 1px solid #263b55;
 }
 
 .sidebar h2 {
-  font-size: 20px;
-  margin-bottom: 8px;
+  font-size: 21px;
+}
+
+.subtitle {
+  color: #8fa8c3;
+  font-size: 12px;
+  margin: 7px 0 20px;
 }
 
 .sidebar h3 {
-  margin: 16px 0 10px;
+  font-size: 14px;
+  color: #5ed5f1;
+  margin: 19px 0 9px;
 }
 
-.hint {
-  color: #91a7bd;
-  font-size: 12px;
-  margin-bottom: 18px;
-}
-
-.tools {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.tool {
-  font-size: 12px;
-  padding: 13px 5px;
+.tool,
+.sidebar > button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 7px;
 }
 
 .tool.active {
-  border-color: #54cfff;
-  background: #164c70;
-}
-
-.wide {
-  width: 100%;
-  margin-bottom: 8px;
-}
-
-.danger {
-  border-color: #713d4c;
-  background: #442333;
-}
-
-hr {
-  border: 0;
-  border-top: 1px solid #263b55;
-  margin: 18px 0;
+  background: #087c9d;
+  border-color: #40d5f5;
 }
 
 .stats {
-  margin-top: 20px;
-  padding: 14px;
-  background: #13243a;
+  margin-top: 22px;
+  padding: 13px;
+  background: #122a41;
   border-radius: 12px;
 }
 
-.stats p {
-  display: flex;
-  justify-content: space-between;
-  margin: 10px 0;
-  color: #a9bdd2;
-  font-size: 13px;
+.stats h3 {
+  margin: 0 0 12px;
 }
 
-.stats strong {
-  color: #67d6ff;
+.stats p {
+  color: #b6c9dc;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.stats span {
+  color: #fff;
+  font-weight: bold;
 }
 
 .city-area {
-  flex: 1;
   min-width: 0;
-  position: relative;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  background: #172c3e;
+  padding: 16px;
 }
 
-.canvas-label {
-  height: 42px;
+.city-heading {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 16px;
-  background: #101e30;
-  color: #9bb8d2;
-  font-size: 11px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 13px;
+}
+
+.city-heading h2 {
+  font-size: 21px;
+}
+
+.city-heading p {
+  font-size: 12px;
+  color: #91abc4;
+  margin-top: 5px;
+}
+
+#status {
+  color: #55d5f1;
+  font-size: 12px;
+  text-align: right;
 }
 
 #cityCanvas {
+  width: 100%;
   flex: 1;
-  min-height: 0;
+  min-height: 480px;
+  overflow: hidden;
+  border: 1px solid #29445e;
+  border-radius: 14px;
+  background: #10243a;
   position: relative;
 }
 
@@ -167,61 +168,42 @@ hr {
   display: block;
   width: 100%;
   height: 100%;
+  outline: none;
+  touch-action: none;
 }
 
-#message {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #10243ae8;
-  padding: 11px 18px;
-  border: 1px solid #38617e;
-  border-radius: 20px;
-  color: #b9eaff;
+.bottom-hint {
+  text-align: center;
+  color: #8fa8c3;
   font-size: 12px;
-  pointer-events: none;
-  white-space: nowrap;
+  padding: 12px 5px;
 }
 
-@media(max-width:700px) {
+@media (max-width: 700px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .layout {
+    flex-direction: column;
+  }
+
   .sidebar {
-    width: 145px;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #263b53;
+  }
+
+  .city-area {
     padding: 10px;
   }
 
-  .sidebar h2 {
-    font-size: 15px;
+  #cityCanvas {
+    min-height: 430px;
   }
 
-  .tool {
-    font-size: 10px;
-    padding: 10px 3px;
-  }
-
-  .topbar {
-    padding: 0 10px;
-  }
-
-  .brand {
-    font-size: 16px;
-  }
-
-  .top-actions {
-    gap: 4px;
-  }
-
-  .top-actions button {
-    font-size: 10px;
-    padding: 8px;
-  }
-
-  #cityStatus {
-    display: none;
-  }
-
-  .canvas-label {
-    font-size: 9px;
-    padding: 0 7px;
+  .city-heading h2 {
+    font-size: 18px;
   }
   }
