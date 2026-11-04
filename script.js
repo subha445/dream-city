@@ -1,375 +1,325 @@
 
 import * as THREE from "three";
-import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-// =================================
-// DREAM CITY - 3D CITY BUILDER
-// =================================
-
-const canvas = document.getElementById("cityCanvas");
-
-if (!canvas) {
-  throw new Error("cityCanvas not found in index.html");
-}
+const container = document.getElementById("cityCanvas");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color("#91c9ee");
-scene.fog = new THREE.Fog("#91c9ee", 45, 120);
+scene.background = new THREE.Color(0x87bde8);
+scene.fog = new THREE.Fog(0x87bde8, 55, 130);
 
 const camera = new THREE.PerspectiveCamera(
-  60,
-  1,
+  55,
+  container.clientWidth / container.clientHeight,
   0.1,
-  500
+  300
 );
+camera.position.set(28, 28, 32);
 
-camera.position.set(20, 22, 25);
-
-const renderer = new THREE.WebGLRenderer({
-  antialias: true
-});
-
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(container.clientWidth, container.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-canvas.appendChild(renderer.domElement);
-
-function resize() {
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
-  renderer.setSize(width, height);
-}
-
-window.addEventListener("resize", resize);
-resize();
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+container.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.maxPolarAngle = Math.PI / 2.05;
-controls.minDistance = 7;
-controls.maxDistance = 75;
-controls.target.set(0, 0, 0);
+controls.minDistance = 8;
+controls.maxDistance = 90;
 
-// =================================
-// LIGHTING
-// =================================
+const ambient = new THREE.HemisphereLight(0xffffff, 0x52645a, 2);
+scene.add(ambient);
 
-const ambientLight = new THREE.HemisphereLight(
-  "#d9edff",
-  "#63764d",
-  2
-);
-
-scene.add(ambientLight);
-
-const sun = new THREE.DirectionalLight("#fff1d1", 2.5);
-sun.position.set(15, 30, 15);
+const sun = new THREE.DirectionalLight(0xffffff, 3);
+sun.position.set(25, 40, 20);
 sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 scene.add(sun);
 
-// =================================
-// GROUND AND GRID
-// =================================
-
-const ground = new THREE.Mesh(
-  new THREE.PlaneGeometry(100, 100),
-  new THREE.MeshStandardMaterial({ color: "#6d9560" })
-);
-
-ground.rotation.x = -Math.PI / 2;
-ground.receiveShadow = true;
-scene.add(ground);
-
-const grid = new THREE.GridHelper(100, 50, "#466d43", "#78966e");
-grid.position.y = 0.02;
-scene.add(grid);
-
-// =================================
-// CITY DATA
-// =================================
-
 const objects = [];
-let selectedObject = null;
-let activeTool = "house";
-let isNight = false;
-let weather = 0;
+let selected = null;
+let currentTool = "select";
+let night = false;
+let raining = false;
 let rain = null;
 
-const colors = {
-  house: "#e8b879",
-  office: "#719cba",
-  skyscraper: "#7896b5",
-  tree: "#32834a",
-  park: "#65ad63",
-  road: "#343b43"
+const materials = {
+  road: new THREE.MeshStandardMaterial({ color: 0x303943 }),
+  white: new THREE.MeshStandardMaterial({ color: 0xe7edf0 }),
+  glass: new THREE.MeshStandardMaterial({
+    color: 0x78c7e8,
+    metalness: 0.4,
+    roughness: 0.2
+  }),
+  wood: new THREE.MeshStandardMaterial({ color: 0x96613d }),
+  leaf: new THREE.MeshStandardMaterial({ color: 0x277d3b }),
+  concrete: new THREE.MeshStandardMaterial({ color: 0x9ca8b0 }),
+  yellow: new THREE.MeshStandardMaterial({
+    color: 0xf5cf65,
+    emissive: 0x4b3100
+  })
 };
 
-// =================================
-// BASIC BUILDING PARTS
-// =================================
-
-function material(color) {
-  return new THREE.MeshStandardMaterial({
-    color,
-    roughness: 0.75
-  });
+function makeMesh(geometry, material, x, y, z, parent) {
+  const obj = new THREE.Mesh(geometry, material);
+  obj.position.set(x, y, z);
+  obj.castShadow = true;
+  obj.receiveShadow = true;
+  parent.add(obj);
+  return obj;
 }
 
-function box(parent, w, h, d, color, x, y, z) {
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(w, h, d),
-    material(color)
-  );
-
-  mesh.position.set(x, y + h / 2, z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
-
-  return mesh;
-}
-
-function cylinder(parent, radius, height, color, x, y, z) {
-  const mesh = new THREE.Mesh(
-    new THREE.CylinderGeometry(radius, radius, height, 12),
-    material(color)
-  );
-
-  mesh.position.set(x, y + height / 2, z);
-  mesh.castShadow = true;
-  parent.add(mesh);
-
-  return mesh;
-}
-
-// =================================
-// HOUSE
-// =================================
-
-function createHouse(color) {
-  const group = new THREE.Group();
-
-  box(group, 2.4, 1.8, 2.2, color, 0, 0, 0);
-
-  const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(1.8, 1.3, 4),
-    material("#a94f42")
-  );
-
-  roof.position.y = 2.45;
-  roof.rotation.y = Math.PI / 4;
-  roof.castShadow = true;
-  group.add(roof);
-
-  box(group, 0.45, 0.9, 0.08, "#65432d", 0, 0, 1.14);
-  box(group, 0.4, 0.4, 0.08, "#a8e3fa", -0.7, 0.9, 1.14);
-  box(group, 0.4, 0.4, 0.08, "#a8e3fa", 0.7, 0.9, 1.14);
-
-  return group;
-}
-
-// =================================
-// OFFICE
-// =================================
-
-function createOffice(color) {
-  const group = new THREE.Group();
-
-  box(group, 3.2, 5, 3.2, color, 0, 0, 0);
-
-  for (let floor = 0; floor < 4; floor++) {
-    for (let side = -1; side <= 1; side++) {
-      box(
-        group, 0.5, 0.6, 0.05,
-        "#c8edff",
-        side * 0.9,
-        0.7 + floor * 1.05,
-        1.63
-      );
-    }
-  }
-
-  return group;
-}
-
-// =================================
-// SKYSCRAPER
-// =================================
-
-function createSkyscraper(color) {
-  const group = new THREE.Group();
-
-  box(group, 3.4, 12, 3.4, color, 0, 0, 0);
-  box(group, 2.7, 1.5, 2.7, "#a8c7db", 0, 12, 0);
-  cylinder(group, 0.08, 2, "#dddddd", 0, 13.5, 0);
-
-  for (let floor = 0; floor < 10; floor++) {
-    for (let side = -1; side <= 1; side++) {
-      box(
-        group, 0.55, 0.65, 0.05,
-        "#c8edff",
-        side * 0.9,
-        0.7 + floor * 1.05,
-        1.73
-      );
-    }
-  }
-
-  return group;
-}
-
-// =================================
-// TREE
-// =================================
-
-function createTree() {
-  const group = new THREE.Group();
-
-  cylinder(group, 0.18, 1.4, "#76502e", 0, 0, 0);
-
-  const leaves = new THREE.Mesh(
-    new THREE.SphereGeometry(0.9, 14, 12),
-    material("#32834a")
-  );
-
-  leaves.position.y = 1.9;
-  leaves.castShadow = true;
-  group.add(leaves);
-
-  return group;
-}
-
-// =================================
-// PARK
-// =================================
-
-function createPark() {
-  const group = new THREE.Group();
-
-  const grass = new THREE.Mesh(
-    new THREE.BoxGeometry(5, 0.12, 5),
-    material("#65ad63")
-  );
-
-  grass.position.y = 0.06;
-  grass.receiveShadow = true;
-  group.add(grass);
-
-  const tree1 = createTree();
-  tree1.position.set(-1.4, 0.1, -1.2);
-  group.add(tree1);
-
-  const tree2 = createTree();
-  tree2.position.set(1.4, 0.1, 1.2);
-  group.add(tree2);
-
-  box(group, 1.5, 0.15, 0.35, "#98704b", 0, 0.12, 0);
-
-  return group;
-}
-
-// =================================
-// ROAD
-// =================================
-
-function createRoad() {
-  const group = new THREE.Group();
-
-  const road = new THREE.Mesh(
-    new THREE.BoxGeometry(5, 0.08, 2),
-    material("#343b43")
-  );
-
-  road.position.y = 0.04;
-  road.receiveShadow = true;
-  group.add(road);
-
-  for (let x = -2; x <= 2; x += 1.5) {
-    box(group, 0.6, 0.02, 0.08, "#f5e7a2", x, 0.09, 0);
-  }
-
-  return group;
-}
-
-// =================================
-// CREATE CITY OBJECT
-// =================================
-
-function snap(value) {
-  return Math.round(value / 2) * 2;
-}
-
-function createObject(kind, x, z, color) {
-  const chosenColor = color || colors[kind];
-  let object;
-
-  if (kind === "house") object = createHouse(chosenColor);
-  if (kind === "office") object = createOffice(chosenColor);
-  if (kind === "skyscraper") object = createSkyscraper(chosenColor);
-  if (kind === "tree") object = createTree();
-  if (kind === "park") object = createPark();
-  if (kind === "road") object = createRoad();
-
-  if (!object) return null;
-
-  object.position.set(snap(x), 0, snap(z));
-
-  object.userData.kind = kind;
-  object.userData.color = chosenColor;
-
-  scene.add(object);
-  objects.push(object);
-
-  updateStats();
-
-  return object;
-}
-
-// =================================
-// SELECTION
-// =================================
-
-const selectionBox = new THREE.BoxHelper(
-  new THREE.Object3D(),
-  "#ffe45e"
+// Ground
+const ground = makeMesh(
+  new THREE.BoxGeometry(100, 0.4, 100),
+  new THREE.MeshStandardMaterial({ color: 0x4e9b57 }),
+  0, -0.3, 0, scene
 );
 
-selectionBox.visible = false;
-scene.add(selectionBox);
+const grid = new THREE.GridHelper(100, 50, 0x47744d, 0x63916a);
+grid.position.y = -0.08;
+scene.add(grid);
 
-function selectObject(object) {
-  selectedObject = object;
-  selectionBox.visible = Boolean(object);
-
-  if (object) {
-    selectionBox.setFromObject(object);
-  }
+// Object registration
+function register(group, type) {
+  group.userData.type = type;
+  scene.add(group);
+  objects.push(group);
+  return group;
 }
 
-function findCityObject(object) {
-  let current = object;
+// Roads
+function createRoad(x, z, width, length, rotation = 0) {
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+  group.rotation.y = rotation;
 
-  while (current && current !== scene) {
-    if (current.userData?.kind) return current;
-    current = current.parent;
+  makeMesh(
+    new THREE.BoxGeometry(width, 0.12, length),
+    materials.road,
+    0, 0.02, 0, group
+  );
+
+  for (let i = -length / 2 + 2; i < length / 2; i += 4) {
+    makeMesh(
+      new THREE.BoxGeometry(0.16, 0.025, 1.8),
+      materials.yellow,
+      0, 0.09, i, group
+    );
   }
 
-  return null;
+  return register(group, "road");
 }
 
-// =================================
-// CLICK TO BUILD OR SELECT
-// =================================
+function createRoadNetwork() {
+  createRoad(0, 0, 8, 90);
+  createRoad(0, 0, 90, 8, Math.PI / 2);
+  createRoad(-25, 0, 6, 90);
+  createRoad(25, 0, 6, 90);
+  createRoad(0, -25, 90, 6, Math.PI / 2);
+  createRoad(0, 25, 90, 6, Math.PI / 2);
+}
 
+// Buildings
+function createBuilding(type, x, z) {
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+
+  let height = 3;
+  let width = 3;
+  let depth = 3;
+  let color = 0xe8b98b;
+
+  if (type === "office") {
+    height = 7;
+    width = 4;
+    depth = 4;
+    color = 0x91b8c9;
+  }
+
+  if (type === "tower") {
+    height = 14;
+    width = 4;
+    depth = 4;
+    color = 0x8aa6c5;
+  }
+
+  makeMesh(
+    new THREE.BoxGeometry(width, height, depth),
+    new THREE.MeshStandardMaterial({ color, roughness: 0.6 }),
+    0, height / 2, 0, group
+  );
+
+  const windowMaterial = new THREE.MeshStandardMaterial({
+    color: 0x9be1ff,
+    emissive: 0x123c55,
+    metalness: 0.4
+  });
+
+  for (let floor = 0; floor < Math.floor(height / 1.5); floor++) {
+    for (let side = -1; side <= 1; side++) {
+      const y = 0.8 + floor * 1.4;
+
+      makeMesh(
+        new THREE.BoxGeometry(0.65, 0.55, 0.06),
+        windowMaterial,
+        side * (width / 3.5),
+        y,
+        depth / 2 + 0.04,
+        group
+      );
+
+      makeMesh(
+        new THREE.BoxGeometry(0.06, 0.55, 0.65),
+        windowMaterial,
+        width / 2 + 0.04,
+        y,
+        side * (depth / 3.5),
+        group
+      );
+    }
+  }
+
+  if (type === "house") {
+    const roof = makeMesh(
+      new THREE.ConeGeometry(2.7, 2, 4),
+      new THREE.MeshStandardMaterial({ color: 0x9c4938 }),
+      0, height + 0.8, 0, group
+    );
+    roof.rotation.y = Math.PI / 4;
+  } else {
+    makeMesh(
+      new THREE.BoxGeometry(width + 0.3, 0.3, depth + 0.3),
+      materials.concrete,
+      0, height + 0.15, 0, group
+    );
+  }
+
+  return register(group, type);
+}
+
+// Trees
+function createTree(x, z) {
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+
+  makeMesh(
+    new THREE.CylinderGeometry(0.18, 0.25, 1.5, 8),
+    materials.wood,
+    0, 0.75, 0, group
+  );
+
+  makeMesh(
+    new THREE.SphereGeometry(1.1, 12, 10),
+    materials.leaf,
+    0, 2, 0, group
+  );
+
+  return register(group, "tree");
+}
+
+// Parks
+function createPark(x, z) {
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+
+  makeMesh(
+    new THREE.BoxGeometry(9, 0.18, 9),
+    new THREE.MeshStandardMaterial({ color: 0x65b86b }),
+    0, 0.05, 0, group
+  );
+
+  for (let i = 0; i < 4; i++) {
+    const a = (i % 2) * 5 - 2.5;
+    const b = Math.floor(i / 2) * 5 - 2.5;
+
+    createTree(x + a, z + b);
+  }
+
+  return register(group, "park");
+}
+
+// Street lamps
+function createLamp(x, z) {
+  const group = new THREE.Group();
+  group.position.set(x, 0, z);
+
+  makeMesh(
+    new THREE.CylinderGeometry(0.08, 0.1, 4, 8),
+    materials.concrete,
+    0, 2, 0, group
+  );
+
+  makeMesh(
+    new THREE.SphereGeometry(0.35, 12, 12),
+    new THREE.MeshStandardMaterial({
+      color: 0xffe5a0,
+      emissive: 0xffc44d,
+      emissiveIntensity: 1
+    }),
+    0, 4.1, 0, group
+  );
+
+  const light = new THREE.PointLight(0xffd58a, 0, 12);
+  light.position.set(0, 4, 0);
+  group.add(light);
+  group.userData.light = light;
+
+  return register(group, "lamp");
+}
+
+// Initial city
+function buildInitialCity() {
+  createRoadNetwork();
+  createBuilding("house", -12, -12);
+  createBuilding("house", -19, -12);
+  createBuilding("office", 12, -12);
+  createBuilding("tower", 15, 13);
+  createBuilding("office", -12, 13);
+  createTree(-19, 15);
+  createTree(20, -15);
+}
+
+buildInitialCity();
+
+// Selection
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 
-renderer.domElement.addEventListener("pointerdown", (event) => {
+function findRoot(object) {
+  let current = object;
+  while (current && current.parent !== scene) {
+    current = current.parent;
+  }
+  return current;
+}
+
+function selectObject(object) {
+  if (selected) {
+    selected.traverse(child => {
+      if (child.material && child.material.emissive) {
+        child.material.emissive.setHex(0x000000);
+      }
+    });
+  }
+
+  selected = object;
+
+  if (selected) {
+    selected.traverse(child => {
+      if (child.material && child.material.emissive) {
+        child.material.emissive.setHex(0x333333);
+      }
+    });
+  }
+}
+
+// Placement and selection
+renderer.domElement.addEventListener("pointerdown", event => {
   const rect = renderer.domElement.getBoundingClientRect();
 
   pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -377,142 +327,115 @@ renderer.domElement.addEventListener("pointerdown", (event) => {
 
   raycaster.setFromCamera(pointer, camera);
 
-  const hits = raycaster.intersectObjects(scene.children, true);
-  const hit = hits.find((item) => findCityObject(item.object));
-
-  if (activeTool === "select") {
-    selectObject(hit ? findCityObject(hit.object) : null);
+  if (currentTool === "select") {
+    const hits = raycaster.intersectObjects(objects, true);
+    selectObject(hits.length ? findRoot(hits[0].object) : null);
     return;
   }
 
-  const groundHit = raycaster.intersectObject(ground);
+  const hits = raycaster.intersectObject(ground);
+  if (!hits.length) return;
 
-  if (groundHit.length) {
-    const point = groundHit[0].point;
-    const newObject = createObject(activeTool, point.x, point.z);
+  const point = hits[0].point;
+  const x = Math.round(point.x / 3) * 3;
+  const z = Math.round(point.z / 3) * 3;
 
-    if (newObject) selectObject(newObject);
+  let created = null;
+
+  if (["house", "office", "tower"].includes(currentTool)) {
+    created = createBuilding(currentTool, x, z);
+  }
+
+  if (currentTool === "tree") created = createTree(x, z);
+  if (currentTool === "park") created = createPark(x, z);
+  if (currentTool === "lamp") created = createLamp(x, z);
+  if (currentTool === "road") created = createRoad(x, z, 6, 18);
+
+  if (created) {
+    selectObject(created);
+    updateStats();
+    showMessage("Object added to your city!");
   }
 });
 
-// =================================
-// TOOL BUTTONS
-// =================================
-
-document.querySelectorAll("[data-tool]").forEach((button) => {
+// Tool selection
+document.querySelectorAll(".tool").forEach(button => {
   button.addEventListener("click", () => {
-    activeTool = button.dataset.tool;
+    document.querySelectorAll(".tool").forEach(b =>
+      b.classList.remove("active")
+    );
 
-    document.querySelectorAll("[data-tool]").forEach((item) => {
-      item.classList.toggle("active", item === button);
-    });
+    button.classList.add("active");
+    currentTool = button.dataset.tool;
+    showMessage("Selected: " + currentTool);
   });
 });
 
-// =================================
-// BUTTON FINDER
-// =================================
+// Rotate
+document.getElementById("rotateBtn").addEventListener("click", () => {
+  if (!selected) return showMessage("Select an object first!");
+  selected.rotation.y += Math.PI / 4;
+});
 
-function findButton(words) {
-  return [...document.querySelectorAll("button")].find((button) => {
-    const text = button.textContent.toLowerCase();
-    return words.some((word) => text.includes(word));
-  });
-}
+// Delete
+document.getElementById("deleteBtn").addEventListener("click", () => {
+  if (!selected) return showMessage("Select an object first!");
 
-// =================================
-// DELETE OBJECT
-// =================================
+  scene.remove(selected);
 
-findButton(["delete"])?.addEventListener("click", () => {
-  if (!selectedObject) return;
-
-  scene.remove(selectedObject);
-
-  const index = objects.indexOf(selectedObject);
+  const index = objects.indexOf(selected);
   if (index !== -1) objects.splice(index, 1);
 
-  selectObject(null);
+  selected = null;
   updateStats();
+  showMessage("Object deleted!");
 });
 
-// =================================
-// ROTATE OBJECT
-// =================================
+// Day and night
+function setNight(value) {
+  night = value;
 
-function rotateSelected() {
-  if (!selectedObject) return;
+  scene.background = new THREE.Color(
+    night ? 0x071326 : 0x87bde8
+  );
 
-  selectedObject.rotation.y += Math.PI / 4;
-  selectionBox.setFromObject(selectedObject);
+  scene.fog.color.set(night ? 0x071326 : 0x87bde8);
+  ambient.intensity = night ? 0.35 : 2;
+  sun.intensity = night ? 0.25 : 3;
+
+  objects.forEach(object => {
+    if (object.userData.light) {
+      object.userData.light.intensity = night ? 2 : 0;
+    }
+  });
+
+  showMessage(night ? "Night mode enabled!" : "Day mode enabled!");
 }
 
-findButton(["rotate"])?.addEventListener("click", rotateSelected);
-
-window.addEventListener("keydown", (event) => {
-  if (event.key.toLowerCase() === "r") rotateSelected();
-  if (event.key === "Escape") selectObject(null);
+document.getElementById("dayBtn").addEventListener("click", () => {
+  setNight(false);
 });
 
-// =================================
-// DAY AND NIGHT
-// =================================
-
-findButton(["day/night", "night", "day"])?.addEventListener("click", () => {
-  isNight = !isNight;
-
-  if (isNight) {
-    scene.background.set("#101b38");
-    scene.fog.color.set("#101b38");
-    ambientLight.intensity = 0.4;
-    sun.intensity = 0.5;
-    ground.material.color.set("#354b3b");
-  } else {
-    scene.background.set("#91c9ee");
-    scene.fog.color.set("#91c9ee");
-    ambientLight.intensity = 2;
-    sun.intensity = 2.5;
-    ground.material.color.set("#6d9560");
-  }
+document.getElementById("nightBtn").addEventListener("click", () => {
+  setNight(true);
 });
 
-// =================================
-// WEATHER
-// =================================
+// Rain
+function toggleRain() {
+  raining = !raining;
 
-function changeWeather() {
-  weather = (weather + 1) % 3;
-
-  if (rain) {
-    scene.remove(rain);
-    rain.geometry.dispose();
-    rain.material.dispose();
-    rain = null;
-  }
-
-  if (weather === 0) {
-    scene.background.set(isNight ? "#101b38" : "#91c9ee");
-  }
-
-  if (weather === 1) {
-    scene.background.set(isNight ? "#182238" : "#8998a8");
-  }
-
-  if (weather === 2) {
-    scene.background.set(isNight ? "#111a2b" : "#71869b");
-
+  if (raining) {
     const positions = [];
 
-    for (let i = 0; i < 700; i++) {
+    for (let i = 0; i < 1500; i++) {
       positions.push(
-        (Math.random() - 0.5) * 70,
-        Math.random() * 25 + 2,
-        (Math.random() - 0.5) * 70
+        Math.random() * 100 - 50,
+        Math.random() * 25 + 5,
+        Math.random() * 100 - 50
       );
     }
 
     const geometry = new THREE.BufferGeometry();
-
     geometry.setAttribute(
       "position",
       new THREE.Float32BufferAttribute(positions, 3)
@@ -521,167 +444,146 @@ function changeWeather() {
     rain = new THREE.Points(
       geometry,
       new THREE.PointsMaterial({
-        color: "#dceeff",
+        color: 0xc7e9ff,
         size: 0.12
       })
     );
 
     scene.add(rain);
+  } else if (rain) {
+    scene.remove(rain);
+    rain.geometry.dispose();
+    rain.material.dispose();
+    rain = null;
   }
 
-  const button = findButton(["weather"]);
-  if (button) {
-    button.textContent = ["Weather: Sunny", "Weather: Cloudy", "Weather: Rainy"][weather];
-  }
+  showMessage(raining ? "Rain started!" : "Rain stopped!");
 }
 
-findButton(["weather"])?.addEventListener("click", changeWeather);
+document.getElementById("rainBtn").addEventListener("click", toggleRain);
 
-// =================================
-// SAVE CITY
-// =================================
-
+// Save
 function saveCity() {
-  const cityData = objects.map((object) => ({
-    kind: object.userData.kind,
-    x: object.position.x,
-    z: object.position.z,
-    rotation: object.rotation.y,
-    color: object.userData.color
-  }));
+  const data = objects
+    .filter(obj => obj.userData.type !== "road")
+    .map(obj => ({
+      type: obj.userData.type,
+      x: obj.position.x,
+      z: obj.position.z,
+      rotation: obj.rotation.y
+    }));
 
-  localStorage.setItem("dreamCitySave", JSON.stringify(cityData));
-  alert("Your city has been saved!");
+  localStorage.setItem("dreamCitySave", JSON.stringify(data));
+  showMessage("City saved successfully!");
 }
 
-findButton(["save"])?.addEventListener("click", saveCity);
-
-// =================================
-// LOAD CITY
-// =================================
-
+// Load
 function loadCity() {
   const saved = localStorage.getItem("dreamCitySave");
 
-  if (!saved) {
-    alert("No saved city found!");
-    return;
-  }
+  if (!saved) return showMessage("No saved city found!");
 
-  objects.forEach((object) => scene.remove(object));
+  objects.slice().forEach(obj => scene.remove(obj));
   objects.length = 0;
-  selectObject(null);
+  selected = null;
 
-  try {
-    const cityData = JSON.parse(saved);
+  createRoadNetwork();
 
-    cityData.forEach((item) => {
-      const object = createObject(
-        item.kind,
-        item.x,
-        item.z,
-        item.color
-      );
+  JSON.parse(saved).forEach(item => {
+    let obj = null;
 
-      if (object) object.rotation.y = item.rotation || 0;
-    });
+    if (["house", "office", "tower"].includes(item.type)) {
+      obj = createBuilding(item.type, item.x, item.z);
+    } else if (item.type === "tree") {
+      obj = createTree(item.x, item.z);
+    } else if (item.type === "park") {
+      obj = createPark(item.x, item.z);
+    } else if (item.type === "lamp") {
+      obj = createLamp(item.x, item.z);
+    }
 
-    updateStats();
-    alert("Your city has been loaded!");
-  } catch (error) {
-    alert("Could not load the saved city.");
-    console.error(error);
-  }
-}
-
-findButton(["load"])?.addEventListener("click", loadCity);
-
-// =================================
-// RESET CITY
-// =================================
-
-function resetCity() {
-  if (!confirm("Are you sure you want to reset your city?")) return;
-
-  objects.forEach((object) => scene.remove(object));
-  objects.length = 0;
-
-  selectObject(null);
-  updateStats();
-}
-
-findButton(["reset"])?.addEventListener("click", resetCity);
-
-// =================================
-// CITY STATISTICS
-// =================================
-
-function updateStats() {
-  const houses = objects.filter((o) => o.userData.kind === "house").length;
-  const offices = objects.filter((o) => o.userData.kind === "office").length;
-  const towers = objects.filter((o) => o.userData.kind === "skyscraper").length;
-  const nature = objects.filter((o) =>
-    ["tree", "park"].includes(o.userData.kind)
-  ).length;
-
-  const population = houses * 4 + offices * 30 + towers * 100;
-
-  const stats = {
-    buildings: houses + offices + towers,
-    population,
-    nature,
-    roads: objects.filter((o) => o.userData.kind === "road").length
-  };
-
-  const display = (id, value) => {
-    const element = document.getElementById(id);
-    if (element) element.textContent = value;
-  };
-
-  display("buildingCount", stats.buildings);
-  display("population", stats.population.toLocaleString());
-  display("treeCount", stats.nature);
-  display("roadCount", stats.roads);
-
-  // Also update elements using common stat labels.
-  document.querySelectorAll("[data-stat]").forEach((element) => {
-    const key = element.dataset.stat;
-    if (key in stats) element.textContent = stats[key].toLocaleString();
+    if (obj) obj.rotation.y = item.rotation || 0;
   });
+
+  updateStats();
+  showMessage("Saved city loaded!");
 }
 
-updateStats();
+document.getElementById("saveBtn").addEventListener("click", saveCity);
+document.getElementById("loadBtn").addEventListener("click", loadCity);
 
-// =================================
-// ANIMATION
-// =================================
+// Reset
+document.getElementById("resetBtn").addEventListener("click", () => {
+  objects.slice().forEach(obj => scene.remove(obj));
+  objects.length = 0;
+  selected = null;
 
+  buildInitialCity();
+
+  localStorage.removeItem("dreamCitySave");
+  updateStats();
+  showMessage("City reset!");
+});
+
+// Statistics
+function updateStats() {
+  const count = type =>
+    objects.filter(obj => obj.userData.type === type).length;
+
+  document.getElementById("buildingCount").textContent =
+    count("house") + count("office") + count("tower");
+
+  document.getElementById("treeCount").textContent = count("tree");
+  document.getElementById("roadCount").textContent = count("road");
+  document.getElementById("totalCount").textContent = objects.length;
+}
+
+// Messages
+let messageTimer;
+
+function showMessage(message) {
+  const box = document.getElementById("message");
+  box.textContent = message;
+
+  clearTimeout(messageTimer);
+
+  messageTimer = setTimeout(() => {
+    box.textContent = "Build your dream city!";
+  }, 2500);
+}
+
+// Resize
+window.addEventListener("resize", () => {
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
+  renderer.setSize(width, height);
+});
+
+// Animation
 function animate() {
   requestAnimationFrame(animate);
-
-  controls.update();
 
   if (rain) {
     const positions = rain.geometry.attributes.position;
 
     for (let i = 0; i < positions.count; i++) {
-      let y = positions.getY(i) - 0.35;
-
+      let y = positions.getY(i) - 0.45;
       if (y < 0) y = 25;
-
       positions.setY(i, y);
     }
 
     positions.needsUpdate = true;
   }
 
-  if (selectedObject) {
-    selectionBox.setFromObject(selectedObject);
-  }
-
+  controls.update();
   renderer.render(scene, camera);
 }
 
+updateStats();
 animate();
 
-console.log("DREAM CITY loaded successfully!");
+console.log("DREAM CITY successfully loaded!");
+        
