@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DREAM CITY | 3D City Builder</title>
+  <title>DREAM CITY 2.0</title>
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
     {
@@ -17,55 +17,62 @@
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">🏙️ DREAM CITY</div>
+    <div class="brand">🌆 DREAM CITY <span>2.0</span></div>
     <div class="top-actions">
-      <span id="cityStatus">CITY ONLINE</span>
       <button id="dayBtn">☀️ Day</button>
       <button id="nightBtn">🌙 Night</button>
+      <button id="rainBtn">🌧️ Rain</button>
     </div>
   </header>
 
   <main class="layout">
     <aside class="sidebar">
-      <h2>Build your city</h2>
-      <p class="hint">Choose an object, then tap the ground.</p>
+      <h2>City Builder</h2>
+      <p class="subtitle">Create your dream world</p>
 
-      <div class="tools">
-        <button class="tool active" data-tool="select">🖱️ Select</button>
-        <button class="tool" data-tool="house">🏠 House</button>
-        <button class="tool" data-tool="office">🏢 Office</button>
-        <button class="tool" data-tool="tower">🏙️ Skyscraper</button>
-        <button class="tool" data-tool="road">🛣️ Road</button>
-        <button class="tool" data-tool="tree">🌳 Tree</button>
-        <button class="tool" data-tool="park">🌲 Park</button>
-        <button class="tool" data-tool="lamp">💡 Street Lamp</button>
-      </div>
+      <h3>🏗️ Buildings</h3>
+      <button class="tool active" data-tool="house">🏠 Modern House</button>
+      <button class="tool" data-tool="office">🏢 Office</button>
+      <button class="tool" data-tool="tower">🌇 Skyscraper</button>
+      <button class="tool" data-tool="pool">🏊 Swimming Pool</button>
 
-      <hr>
-      <h3>City controls</h3>
-      <button id="rotateBtn" class="wide">🔄 Rotate selected</button>
-      <button id="deleteBtn" class="wide danger">🗑️ Delete selected</button>
-      <button id="rainBtn" class="wide">🌧️ Toggle rain</button>
-      <button id="saveBtn" class="wide">💾 Save city</button>
-      <button id="loadBtn" class="wide">📂 Load city</button>
-      <button id="resetBtn" class="wide danger">↻ Reset city</button>
+      <h3>🌳 Nature</h3>
+      <button class="tool" data-tool="tree">🌳 Tree</button>
+      <button class="tool" data-tool="park">🌲 Park</button>
+
+      <h3>🚗 City Life</h3>
+      <button class="tool" data-tool="car">🚗 Car</button>
+      <button class="tool" data-tool="person">🚶 Person</button>
+      <button class="tool" data-tool="lamp">💡 Streetlight</button>
+
+      <h3>⚙️ Controls</h3>
+      <button id="selectBtn">👆 Select</button>
+      <button id="rotateBtn">🔄 Rotate</button>
+      <button id="deleteBtn">🗑️ Delete</button>
+      <button id="saveBtn">💾 Save City</button>
+      <button id="loadBtn">📂 Load City</button>
+      <button id="resetBtn">♻️ Reset City</button>
 
       <div class="stats">
-        <h3>City statistics</h3>
-        <p>Buildings <strong id="buildingCount">0</strong></p>
-        <p>Trees <strong id="treeCount">0</strong></p>
-        <p>Roads <strong id="roadCount">0</strong></p>
-        <p>Total objects <strong id="totalCount">0</strong></p>
+        <h3>📊 City Stats</h3>
+        <p>Buildings: <span id="buildingCount">0</span></p>
+        <p>Trees: <span id="treeCount">0</span></p>
+        <p>Objects: <span id="objectCount">0</span></p>
       </div>
     </aside>
 
     <section class="city-area">
-      <div class="canvas-label">
-        <span>🌎 YOUR VIRTUAL WORLD</span>
-        <span>Drag to rotate · Scroll to zoom</span>
+      <div class="city-heading">
+        <div>
+          <h2>My Dream City</h2>
+          <p>Build • Explore • Create</p>
+        </div>
+        <div id="status">Ready to build!</div>
       </div>
       <div id="cityCanvas"></div>
-      <div id="message">Welcome to DREAM CITY!</div>
+      <div class="bottom-hint">
+        🖱️ Drag to explore · Tap to build · Pinch to zoom
+      </div>
     </section>
   </main>
 
