@@ -1,2 +1,2 @@
-# dream-city
-A realistic 3D virtual city builder
+# DREAM CITY
+A realistic 3D modern city builder.
