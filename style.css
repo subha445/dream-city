@@ -8,7 +8,7 @@
 body {
   font-family: Arial, sans-serif;
   background: #07111f;
-  color: #fff;
+  color: white;
   min-height: 100vh;
 }
 
@@ -24,8 +24,7 @@ button {
 }
 
 button:hover {
-  background: #246b91;
-  transform: translateY(-1px);
+  background: #087c9d;
 }
 
 .topbar {
@@ -47,7 +46,7 @@ button:hover {
 
 .brand span {
   color: #38c8ed;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .top-actions {
@@ -117,7 +116,7 @@ button:hover {
 }
 
 .stats span {
-  color: #fff;
+  color: white;
   font-weight: bold;
 }
 
@@ -206,4 +205,4 @@ button:hover {
   .city-heading h2 {
     font-size: 18px;
   }
-  }
+}
