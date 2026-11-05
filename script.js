@@ -288,6 +288,16 @@ function makeBridge(x, z) {
     addBox(group, i, 2, -3.8, 0.3, 2, 0.3, materials.white);
     addBox(group, i, 2, 3.8, 0.3, 2, 0.3, materials.white);
   }
+  const outline = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(width, height, depth)),
+  new THREE.LineBasicMaterial({
+    color: 0xff542e,
+    transparent: true,
+    opacity: 0.65
+  })
+);
+outline.position.y = height / 2;
+group.add(outline);
   group.position.set(x, 0, z);
   city.add(group);
   objects.push(group);
