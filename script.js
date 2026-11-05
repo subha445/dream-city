@@ -118,6 +118,42 @@ function makeRoadNetwork() {
 }
 
 makeRoadNetwork();
+function makeStreetlight(x, z) {
+  const poleMat = new THREE.MeshStandardMaterial({color: 0x34343a});
+  const pole = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.16, 7, 8),
+    poleMat
+  );
+  pole.position.set(x, 3.5, z);
+  city.add(pole);
+
+  const arm = new THREE.Mesh(
+    new THREE.BoxGeometry(2, 0.15, 0.15),
+    poleMat
+  );
+  arm.position.set(x + 0.8, 6.8, z);
+  city.add(arm);
+
+  const bulb = new THREE.Mesh(
+    new THREE.SphereGeometry(0.35, 12, 12),
+    new THREE.MeshStandardMaterial({
+      color: 0xffab45,
+      emissive: 0xff542e,
+      emissiveIntensity: 2
+    })
+  );
+  bulb.position.set(x + 1.6, 6.6, z);
+  city.add(bulb);
+
+  const light = new THREE.PointLight(0xff542e, 2, 13);
+  light.position.copy(bulb.position);
+  city.add(light);
+}
+
+for (let i = -80; i <= 80; i += 40) {
+  makeStreetlight(i + 9, 12);
+  makeStreetlight(i - 9, -12);
+}
 
 const buildingColors = [
   0xff542e,
