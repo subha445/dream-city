@@ -1,67 +1,80 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DREAM CITY 4.0</title>
+  <title>DREAM CITY 6.0</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@500;700;800&display=swap" rel="stylesheet">
   <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
     }
-  }
   </script>
 </head>
 <body>
-  <header>
-    <h1>🌆 DREAM CITY 4.0</h1>
-    <p>REALISTIC OPEN WORLD</p>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">DC</span>
+      <div>
+        <h1>DREAM CITY <span>6.0</span></h1>
+        <p>REALISTIC OPEN WORLD</p>
+      </div>
+    </div>
     <div class="top-controls">
-      <button id="dayBtn">☀️ Day</button>
-      <button id="nightBtn">🌙 Night</button>
-      <button id="rainBtn">🌧️ Rain</button>
-      <button id="exploreBtn">🚶 Explore</button>
+      <button id="dayBtn">☀ Day</button>
+      <button id="nightBtn">☾ Night</button>
+      <button id="rainBtn">🌧 Rain</button>
+      <button id="exploreBtn">▶ Explore</button>
     </div>
   </header>
 
-  <main>
-    <aside id="sidebar">
-      <h2>BUILD YOUR CITY</h2>
-      <button data-tool="house">🏠 Houses</button>
-      <button data-tool="office">🏢 Offices</button>
-      <button data-tool="tower">🏙️ Skyscrapers</button>
-      <button data-tool="mall">🛍️ Shopping Mall</button>
-      <button data-tool="hospital">🏥 Hospital</button>
-      <button data-tool="school">🏫 School</button>
-      <button data-tool="airport">✈️ Airport</button>
-      <button data-tool="station">🚆 Railway Station</button>
-      <button data-tool="park">🌳 Park</button>
-      <button data-tool="lake">🌊 Lake</button>
-      <button data-tool="beach">🏖️ Beach</button>
-      <button data-tool="bridge">🌉 Bridge</button>
-      <button data-tool="car">🚗 Car</button>
-      <button data-tool="traffic">🚦 Traffic Signal</button>
+  <main class="app">
+    <aside class="sidebar">
+      <h2>CITY BUILDER</h2>
+      <p class="section-label">CONSTRUCTION</p>
+      <div class="tool-grid">
+        <button data-tool="house">⌂<span>House</span></button>
+        <button data-tool="office">▥<span>Office</span></button>
+        <button data-tool="tower">▤<span>Tower</span></button>
+        <button data-tool="mall">▣<span>Mall</span></button>
+        <button data-tool="hospital">✚<span>Hospital</span></button>
+        <button data-tool="school">▧<span>School</span></button>
+        <button data-tool="airport">✈<span>Airport</span></button>
+        <button data-tool="station">▰<span>Station</span></button>
+        <button data-tool="park">♧<span>Park</span></button>
+        <button data-tool="lake">≈<span>Lake</span></button>
+        <button data-tool="beach">☼<span>Beach</span></button>
+        <button data-tool="bridge">⌁<span>Bridge</span></button>
+        <button data-tool="car">🚘<span>Car</span></button>
+        <button data-tool="traffic">🚦<span>Traffic</span></button>
+      </div>
 
-      <h2>EDIT CITY</h2>
-      <button id="selectBtn">Select</button>
-      <button id="rotateBtn">Rotate</button>
-      <button id="deleteBtn">Delete</button>
-      <button id="saveBtn">💾 Save</button>
-      <button id="loadBtn">📂 Load</button>
-      <button id="resetBtn">Reset City</button>
+      <p class="section-label">CITY CONTROLS</p>
+      <div class="action-grid">
+        <button id="selectBtn">Select</button>
+        <button id="rotateBtn">Rotate</button>
+        <button id="deleteBtn">Delete</button>
+        <button id="saveBtn">Save City</button>
+        <button id="loadBtn">Load City</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <div class="stats">
+        <p>BUILDINGS <strong id="buildingCount">0</strong></p>
+        <p>TREES <strong id="treeCount">0</strong></p>
+        <p>OBJECTS <strong id="objectCount">0</strong></p>
+      </div>
     </aside>
 
-    <section id="cityArea">
-      <div id="stats">
-        Buildings: <span id="buildingCount">0</span> |
-        Trees: <span id="treeCount">0</span> |
-        Objects: <span id="objectCount">0</span>
-      </div>
+    <section class="city-area">
       <div id="cityCanvas"></div>
-      <p id="status">Welcome to DREAM CITY 4.0</p>
+      <div class="city-label">LIVE CITY VIEW <span>● ONLINE</span></div>
+      <div id="status">Welcome to Dream City 6.0</div>
     </section>
   </main>
 
