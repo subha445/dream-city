@@ -149,11 +149,12 @@ function makeBuilding(type, x, z) {
   addBox(group, 0, 0, 0, width, height, depth, wall);
 
   const windowMat = new THREE.MeshStandardMaterial({
-    color: 0x8bb8ce,
-    metalness: 0.5,
-    roughness: 0.22,
-    emissive: 0x102533
-  });
+  color: 0xffab45,
+  metalness: 0.65,
+  roughness: 0.16,
+  emissive: 0xff542e,
+  emissiveIntensity: 0.35
+});
 
   for (let y = 2.5; y < height - 1; y += 3.5) {
     for (let xx = -width / 2 + 1.5; xx < width / 2; xx += 3) {
