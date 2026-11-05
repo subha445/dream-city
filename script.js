@@ -120,8 +120,13 @@ function makeRoadNetwork() {
 makeRoadNetwork();
 
 const buildingColors = [
-  0xd1d2cf, 0xc6b6a1, 0xaaaeb2, 0x9eabb3,
-  0xe0d8ca, 0x777f88, 0xb9c7ca
+  0xff542e,
+  0xff365e,
+  0xff7048,
+  0xffab45,
+  0x9e3047,
+  0x71313d,
+  0x38252b
 ];
 
 function makeBuilding(type, x, z) {
@@ -178,7 +183,10 @@ function makeBuilding(type, x, z) {
   if (type === "house") {
     const roof = new THREE.Mesh(
       new THREE.ConeGeometry(9, 5, 4),
-      new THREE.MeshStandardMaterial({ color: 0x8b5141 })
+      new THREE.MeshStandardMaterial({
+  color: 0xff365e,
+  roughness: 0.7
+})
     );
     roof.position.y = height + 2;
     roof.rotation.y = Math.PI / 4;
