@@ -320,6 +320,9 @@ function makeTraffic(x, z) {
     light.position.set(0, 5.8 - i * 0.8, 0.45);
     group.add(light);
   });
+  const glow = new THREE.PointLight(0xff542e, 3, 15);
+glow.position.set(0, 5.5, 1);
+group.add(glow);
   group.position.set(x, 0, z);
   city.add(group);
   objects.push(group);
